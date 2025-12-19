@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PortPal - File Server</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+            color: #2d3748;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            padding: 2rem;
+            border: none;
+        }
+
+        h1 {
+            color: #667eea;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+        }
+
+        .subtitle {
+            color: #718096;
+            margin-bottom: 2rem;
+            font-size: 1rem;
+        }
+
+        .file-list {
+            list-style: none;
+        }
+
+        .file-item {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .file-item:hover {
+            background: #ffffff;
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+            transform: translateX(5px);
+        }
+
+        .file-item a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            display: block;
+        }
+
+        .file-item a:hover {
+            text-decoration: underline;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #718096;
+        }
+
+        .empty-state p {
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1.2rem;
+            }
+
+            .container {
+                padding: 1.4rem;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            }
+
+            h1 {
+                font-size: 1.6rem;
+            }
+
+            .subtitle {
+                font-size: 0.95rem;
+            }
+        }
+
+        @media (max-width: 520px) {
+            body {
+                padding: 0.9rem;
+            }
+
+            .container {
+                padding: 1rem;
+                border-radius: 10px;
+            }
+
+            h1 {
+                font-size: 1.4rem;
+            }
+
+            .file-item {
+                padding: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📁 PortPal</h1>
+        <p class="subtitle">Your file hosting server is running</p>
+        
+        <h2 style="color: #333; margin-top: 2rem; margin-bottom: 1rem;">Available Files</h2>
+        <ul id="fileList" class="file-list">
+            <div class="empty-state">
+                <p>📭 No files uploaded yet</p>
+                <p style="font-size: 0.9rem;">Add files to the public folder to see them here</p>
+            </div>
+        </ul>
+    </div>
+
+    <script>
+        // Load and display files from the API
+        fetch('/api/files')
+            .then(response => response.json())
+            .then(files => {
+                const fileList = document.getElementById('fileList');
+                
+                if (files.length > 0) {
+                    fileList.innerHTML = '';
+                    files.forEach(file => {
+                        const li = document.createElement('li');
+                        li.className = 'file-item';
+                        li.innerHTML = `<a href="${file}" download>${file}</a>`;
+                        fileList.appendChild(li);
+                    });
+                }
+            })
+            .catch(err => console.error('Error loading file list:', err));
+    </script>
+</body>
+</html>

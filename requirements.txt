@@ -1,0 +1,3 @@
+# PortPal — Local HTTP Server + Android Companion
+# No external dependencies required; uses Python 3.7+ built-in modules
+# (http.server, socketserver, argparse)
