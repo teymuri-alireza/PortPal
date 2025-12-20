@@ -456,10 +456,10 @@
             border: none;
         }
 
-                background: var(--progress-track);
+        .progress-bar {
             height: 100%;
             width: 0%;
-                background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
             box-shadow: none;
             transition: width 0.1s linear;
         }
@@ -673,6 +673,18 @@
             <div class="total-files">
                 <h3 id="totalFiles">0</h3>
                 <p>Total Files</p>
+            </div>
+
+            <h2>💽 Storage</h2>
+            <div id="storageCard" class="stat-item">
+                <div class="stat-header">
+                    <span class="stat-type">Disk Usage</span>
+                    <span class="stat-count" id="storageCount">--</span>
+                </div>
+                <div class="stat-bar">
+                    <div class="stat-fill" id="storageFill" style="width: 0%"></div>
+                </div>
+                <span class="stat-percentage" id="storageText">Loading storage...</span>
             </div>
 
             <h2>📊 File Statistics</h2>
@@ -1008,6 +1020,27 @@
             progressText.textContent = total ? `${percent}% • ${formatBytes(done)} / ${formatBytes(total)}` : '';
         }
 
+        function renderStorage(info) {
+            const usedPct = Math.min(100, Math.max(0, Math.round(info.percent_used || 0)));
+            const storageFill = document.getElementById('storageFill');
+            const storageCount = document.getElementById('storageCount');
+            const storageText = document.getElementById('storageText');
+            if (!storageFill || !storageCount || !storageText) return;
+            storageFill.style.width = usedPct + '%';
+            storageCount.textContent = usedPct + '%';
+            storageText.textContent = `Free: ${formatBytes(info.free)} • Total: ${formatBytes(info.total)}`;
+        }
+
+        function loadStorage() {
+            fetch('/api/storage')
+                .then(r => r.json())
+                .then(renderStorage)
+                .catch(() => {
+                    const storageText = document.getElementById('storageText');
+                    if (storageText) storageText.textContent = 'Unable to load storage info';
+                });
+        }
+
         function uploadSingleFile(file, path, onProgress) {
             return new Promise(resolve => {
                 const formData = new FormData();
@@ -1067,6 +1100,7 @@
             }
 
             loadFiles(currentPath);
+            loadStorage();
         }
 
         async function deleteFile(filename, itemType) {
@@ -1099,7 +1133,7 @@
                 if (response.ok) {
                     setStatus(`✓ ${filename} deleted successfully.`);
                     // Reload after a delay to allow background deletion to complete
-                    setTimeout(() => loadFiles(currentPath), 1000);
+                    setTimeout(() => { loadFiles(currentPath); loadStorage(); }, 1000);
                 } else {
                     const errorMsg = result.error || `Server error (${response.status})`;
                     setStatus(`Error: ${errorMsg}`, true);
@@ -1137,6 +1171,7 @@
 
         let currentPath = '';
         loadFiles();
+        loadStorage();
 
         // Dark mode toggle
         const themeToggle = document.getElementById('themeToggle');

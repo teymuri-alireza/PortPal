@@ -456,10 +456,10 @@
             border: none;
         }
 
-                background: var(--progress-track);
+        .progress-bar {
             height: 100%;
             width: 0%;
-                background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
             box-shadow: none;
             transition: width 0.1s linear;
         }
@@ -727,6 +727,18 @@
             <div class="total-files">
                 <h3 id="totalFiles">0</h3>
                 <p>Total Files</p>
+            </div>
+
+            <h2>💽 Storage</h2>
+            <div id="storageCard" class="stat-item">
+                <div class="stat-header">
+                    <span class="stat-type">Disk Usage (Demo)</span>
+                    <span class="stat-count" id="storageCount">--</span>
+                </div>
+                <div class="stat-bar">
+                    <div class="stat-fill" id="storageFill" style="width: 0%"></div>
+                </div>
+                <span class="stat-percentage" id="storageText">Demo storage info</span>
             </div>
 
             <h2>📊 File Statistics</h2>
@@ -1191,6 +1203,17 @@
             uploadStatus.style.fontWeight = '600';
         }
 
+        function renderStorage(info) {
+            const usedPct = Math.min(100, Math.max(0, Math.round((info.percent_used || (info.used/info.total*100)) || 0)));
+            const storageFill = document.getElementById('storageFill');
+            const storageCount = document.getElementById('storageCount');
+            const storageText = document.getElementById('storageText');
+            if (!storageFill || !storageCount || !storageText) return;
+            storageFill.style.width = usedPct + '%';
+            storageCount.textContent = usedPct + '%';
+            storageText.textContent = `Free: ${formatBytes(info.free)} • Total: ${formatBytes(info.total)}`;
+        }
+
         function formatBytes(bytes) {
             if (bytes === 0) return '0 Bytes';
             const k = 1024;
@@ -1214,6 +1237,12 @@
         
         // Load demo data
         loadDemoFiles();
+
+        // Demo storage values (mocked)
+        const demoTotal = 500 * 1024 * 1024 * 1024; // 500 GB
+        const demoUsed = 320 * 1024 * 1024 * 1024;  // 320 GB
+        const demoFree = demoTotal - demoUsed;
+        renderStorage({ total: demoTotal, used: demoUsed, free: demoFree, percent_used: (demoUsed/demoTotal)*100 });
 
         // Dark mode toggle
         const themeToggle = document.getElementById('themeToggle');

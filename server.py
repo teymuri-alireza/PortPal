@@ -12,6 +12,7 @@ import os
 import json
 import socket
 import threading
+import shutil
 from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlparse, parse_qs
 from typing import Optional, Tuple
@@ -28,7 +29,7 @@ class CustomHTTPHandler(http.server.SimpleHTTPRequestHandler):
         """Set CORS headers for API responses"""
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With')
-        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
 
     def _safe_path(self, rel_path: str) -> Optional[str]:
         rel_path = rel_path.strip() if rel_path else ''
@@ -141,7 +142,7 @@ class CustomHTTPHandler(http.server.SimpleHTTPRequestHandler):
         return None, None
 
     def do_OPTIONS(self):
-        if self.path in ['/api/upload', '/api/delete']:
+        if self.path in ['/api/upload', '/api/delete', '/api/storage']:
             self.send_response(204)
             self._set_cors_headers()
             self.send_header('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
@@ -171,6 +172,32 @@ class CustomHTTPHandler(http.server.SimpleHTTPRequestHandler):
             self._set_cors_headers()
             self.end_headers()
             self.wfile.write(json.dumps(listing).encode())
+            return
+
+        # Storage info endpoint
+        if parsed.path == '/api/storage':
+            try:
+                total, used, free = shutil.disk_usage(self.root_dir)
+                percent_used = (used / total * 100.0) if total else 0.0
+                payload = {
+                    'mount': os.path.abspath(self.root_dir).replace('\\', '/'),
+                    'total': int(total),
+                    'used': int(used),
+                    'free': int(free),
+                    'percent_used': round(percent_used, 1)
+                }
+                self.send_response(200)
+                self.send_header('Content-type', 'application/json')
+                self._set_cors_headers()
+                self.end_headers()
+                self.wfile.write(json.dumps(payload).encode())
+            except Exception as e:
+                print(f"Storage info error: {e}")
+                self.send_response(500)
+                self.send_header('Content-type', 'application/json')
+                self._set_cors_headers()
+                self.end_headers()
+                self.wfile.write(json.dumps({'error': 'Unable to read storage info'}).encode())
             return
 
         # Default behavior for other requests
