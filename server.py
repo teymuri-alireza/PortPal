@@ -36,7 +36,7 @@ locked_ips = {}  # IP -> lockout timestamp
 # Online users tracking
 online_users = {}
 online_lock = threading.Lock()
-ONLINE_TIMEOUT = 300  # consider user offline after 5 minutes without ping
+ONLINE_TIMEOUT = 30  # consider user offline after 30 seconds without ping
 
 def device_from_ua(ua: str) -> str:
     ua = (ua or '').lower()
