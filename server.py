@@ -644,7 +644,7 @@ def show_ipv4_menu():
     print_banner()
     print("\n Device IPv4 Address")
     print("-" * 60)
-    ipv4 = get_ipv4()
+    ipv4 = ""
     print(f"Your IPv4: {ipv4}")
     print("\nYou can access your files from other devices using:")
     print(f"http://{ipv4}:8000 (or the port you choose)")
@@ -688,7 +688,7 @@ def start_server(port=None):
     # if the port is used ask for a different one
     while True:
         try:
-            with socketserver.TCPServer(("0.0.0.0", port), handler) as httpd:
+            with socketserver.TCPServer(("", port), handler) as httpd:
                 ipv4 = get_ipv4()
                 print(
                     f"Serving HTTP Server on {ipv4} port {port} (http://{ipv4}:{port}/) ..."
